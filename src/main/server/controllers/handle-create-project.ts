@@ -7,9 +7,6 @@ import fs from 'fs'
 
 // Controller to handle fetching clients
 const handleCreateProject = async (req: Request, res: Response): Promise<void> => {
-  console.log('*************')
-  console.log('*************')
-  console.log('req.body ===>>', req.body, '\n\n\n\n')
   try {
     const { project_name, project_description, project_id, organization_id } = req.body
     if (!project_name || !project_id || !organization_id) {
@@ -28,7 +25,7 @@ const handleCreateProject = async (req: Request, res: Response): Promise<void> =
       return
     }
 
-    const PROJECT_PATH = path.resolve(__dirname, `../../target-codebases/${project_id}`)
+    const PROJECT_PATH = path.resolve(__dirname, `../../../target-codebases/${project_id}`)
     if (!fs.existsSync(PROJECT_PATH)) {
       fs.mkdirSync(PROJECT_PATH, { recursive: true })
     }
