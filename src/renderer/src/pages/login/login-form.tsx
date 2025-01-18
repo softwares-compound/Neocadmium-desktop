@@ -28,7 +28,7 @@ export function LoginForm() {
             <Label htmlFor="client-id">Client ID</Label>
             <Input
               id="client-id"
-              type="text"
+              type="password"
               placeholder="5c133a93-8dd4-4958-847a-ae81a5e11743"
               value={formData.clientId}
               onChange={(e) => {
