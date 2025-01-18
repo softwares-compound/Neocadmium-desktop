@@ -31,7 +31,7 @@ export function NavMain({
   }[]
 }) {
   const navigate = useNavigate()
-  const { organization } = useAuthStore()
+  const { organizationName: organization } = useAuthStore()
   const { project_id } = useParams()
   return (
     <SidebarGroup>

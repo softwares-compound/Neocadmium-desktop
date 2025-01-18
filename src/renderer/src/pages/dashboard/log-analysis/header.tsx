@@ -16,7 +16,7 @@ import { useParams } from 'react-router-dom'
 type Submodule = 'explorer' | 'analyze' | 'configure'
 
 const Header: React.FC = () => {
-  const { organization } = useAuthStore()
+  const { organizationName: organization } = useAuthStore()
   const { submodule } = useParams<{ submodule: Submodule }>() // Treat as a string to handle unmatched cases
   return (
     <header className="flex h-16 shrink-0 items-center gap-2">

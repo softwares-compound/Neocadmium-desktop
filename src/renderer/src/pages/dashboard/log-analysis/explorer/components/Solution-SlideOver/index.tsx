@@ -12,8 +12,8 @@ import { DialogTitle } from '@radix-ui/react-dialog'
 import { LogTableEntry } from '../../../../../../types/type'
 import { useLogStore } from '../../../../../../stores/useLogStore'
 import { GeneralInfo } from './general-info'
-import { StackTrace } from './stack-trace'
 import RagInference from './rag-inference'
+import { StackTrace } from './stack-trace'
 
 export interface SlideOverProps {
   open: boolean
@@ -33,8 +33,6 @@ export function SolutionSlideOver({
   if (!errorLog) {
     return null
   }
-
-  console.log('streamingData', streamingData?.id, '====', errorLog.id)
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
