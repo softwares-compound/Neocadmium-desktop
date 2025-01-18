@@ -7,9 +7,6 @@ import { FolderChecker } from '../utils/check-folder-exists'
 
 // Controller to handle fetching clients
 const handleCheckProjectRemoteLink = async (req: Request, res: Response): Promise<void> => {
-  console.log('*************')
-  console.log('*************')
-  console.log('req.body ===>>', req.body, '\n\n\n\n')
   try {
     // Open the SQLite database
     const list = req.body.projectList as any[]
@@ -26,7 +23,7 @@ const handleCheckProjectRemoteLink = async (req: Request, res: Response): Promis
       return
     }
 
-    console.log('*************all check pass ************** \n\n\n\n')
+    // console.log('*************all check pass ************** \n\n\n\n')
     const newList = list.map((item: any) => {
       if (!item.id) {
         return {
@@ -35,18 +32,9 @@ const handleCheckProjectRemoteLink = async (req: Request, res: Response): Promis
           isConnectedToRemote: false
         }
       }
-      console.log('*************')
-      console.log('*************')
-      console.log('************* loop first iteration ************** \n\n\n\n')
-      console.log('item ===>>', item.id)
+
       const projectDetail = ProjectModel.getProjectById(item.id)
-      console.log('#############')
-      console.log('#############')
-      console.log('projectDetail ===>>', projectDetail, '\n\n\n\n')
-      console.log('#############')
-      console.log('#############')
-      console.log('************* check project exixts ************** \n\n\n\n')
-      console.log('doesFolderExist(item.id) ===>>', item.id, FolderChecker.doesFolderExist(item.id))
+
       // Check if the project exists in the database
       if (projectDetail && FolderChecker.doesFolderExist(item.id)) {
         if (FolderChecker.doesFolderWithinFolderExist(item.id)) {
@@ -65,14 +53,10 @@ const handleCheckProjectRemoteLink = async (req: Request, res: Response): Promis
           }
         }
       } else {
-        console.log('************* **************')
-        console.log('************* **************')
-        console.log('************* **************')
-        console.log('************* create new project ************** \n\n\n\n')
         // Create a new project if it doesn't exist
         const { name, description, id } = item
         ProjectModel.createProject(name, description, id, organization_id)
-        const PROJECT_PATH = path.resolve(__dirname, `../../target-codebases/${id}`)
+        const PROJECT_PATH = path.resolve(__dirname, `../../../target-codebases/${id}`)
         if (!fs.existsSync(PROJECT_PATH)) {
           fs.mkdirSync(PROJECT_PATH, { recursive: true })
         }
@@ -85,8 +69,6 @@ const handleCheckProjectRemoteLink = async (req: Request, res: Response): Promis
     })
     res.status(200).json({ list: newList })
   } catch (error: any) {
-    console.error('[Error] =====>>')
-    console.error('[Error] =====>>')
     console.error('[Error] =====>>', error)
 
     // Handle database errors

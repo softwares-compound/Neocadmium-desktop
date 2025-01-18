@@ -10,6 +10,7 @@ import log from './middlewares/logging'
 import logger from './utils/logger'
 import config from './config'
 import { WebSocketServer } from 'ws'
+import path from 'path'
 
 const app = express()
 const shell = os.platform() === 'win32' ? 'powershell.exe' : 'bash'
@@ -28,7 +29,7 @@ const server = http.createServer(app)
 
 // Attach WebSocket server to the HTTP server
 const wss = new WebSocketServer({ server, path: '/ws' })
-console.log('command execution path:', process.cwd() + '/target-codebases/')
+
 // List of allowed commands (whitelist approach)
 const allowedCommands = ['echo', 'git', 'ls', 'pwd', 'whoami'] // Add safe commands here
 
@@ -50,8 +51,10 @@ wss.on('connection', (ws) => {
             return
           }
 
-          // Dynamically set cwd based on projectId
-          const projectPath = process.cwd() + '/target-codebases/' + projectId
+          // Get the parent directory of process.cwd()
+          const parentDir = path.dirname(process.cwd())
+          // Construct the project path
+          const projectPath = path.join(parentDir, 'target-codebases', projectId)
 
           // Initialize the PTY process with the project directory
           ptyProcess = pty.spawn(shell, [], {
