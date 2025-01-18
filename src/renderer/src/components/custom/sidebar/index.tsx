@@ -188,7 +188,7 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { organization } = useAuthStore() // Zustand state for auth
+  const { organizationName: organization } = useAuthStore() // Zustand state for auth
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>

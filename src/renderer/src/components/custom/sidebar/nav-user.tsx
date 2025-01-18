@@ -24,7 +24,7 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar()
   const navigate = useNavigate()
-  const { organization } = useAuthStore()
+  const { organizationName: organization } = useAuthStore()
   return (
     <SidebarMenu>
       <SidebarMenuItem>

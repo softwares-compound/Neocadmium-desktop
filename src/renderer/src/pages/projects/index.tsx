@@ -9,7 +9,7 @@ import { useState } from 'react'
 import LinkProjectDrawer from './link-project-drawer'
 
 export default function Projects() {
-  const { organization, isLoggedIn } = useAuthStore()
+  const { organizationName: organization, isLoggedIn } = useAuthStore()
   const { projectList } = useProjectListStore()
   const navigate = useNavigate()
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
