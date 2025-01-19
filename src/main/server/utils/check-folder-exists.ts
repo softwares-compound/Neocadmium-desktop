@@ -1,5 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
+import { Paths } from '../config/paths'
 
 export class FolderChecker {
   /**
@@ -9,7 +10,7 @@ export class FolderChecker {
    */
   static doesFolderExist(id: string): boolean {
     // Resolve the project path based on the given ID
-    const PROJECT_PATH = path.resolve(__dirname, `../../../target-codebases/${id}`)
+    const PROJECT_PATH = path.resolve(Paths.getTargetCodebasesDir(), `${id}`)
 
     try {
       // Check if the path exists and is a directory
@@ -30,7 +31,7 @@ export class FolderChecker {
    * @returns {boolean} - True if there's at least one subfolder, otherwise false.
    */
   static doesFolderWithinFolderExist(id: string): boolean {
-    const PROJECT_PATH = path.resolve(__dirname, `../../../target-codebases/${id}`)
+    const PROJECT_PATH = path.resolve(Paths.getTargetCodebasesDir(), `${id}`)
 
     try {
       // First, check that the project path exists and is a directory

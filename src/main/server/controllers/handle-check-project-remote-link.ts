@@ -4,6 +4,7 @@ import { ProjectModel } from '../models/projectModel'
 import path from 'path'
 import fs from 'fs'
 import { FolderChecker } from '../utils/check-folder-exists'
+import { Paths } from '../config/paths'
 
 // Controller to handle fetching clients
 const handleCheckProjectRemoteLink = async (req: Request, res: Response): Promise<void> => {
@@ -56,7 +57,7 @@ const handleCheckProjectRemoteLink = async (req: Request, res: Response): Promis
         // Create a new project if it doesn't exist
         const { name, description, id } = item
         ProjectModel.createProject(name, description, id, organization_id)
-        const PROJECT_PATH = path.resolve(__dirname, `../../../target-codebases/${id}`)
+        const PROJECT_PATH = path.resolve(Paths.getTargetCodebasesDir(), `${id}`)
         if (!fs.existsSync(PROJECT_PATH)) {
           fs.mkdirSync(PROJECT_PATH, { recursive: true })
         }
