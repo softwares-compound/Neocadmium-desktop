@@ -1,10 +1,46 @@
 {
-  "name": "electron-vite",
-  "version": "1.0.0",
-  "description": "An Electron application with React and TypeScript",
+  "name": "Neocadmium",
+  "version": "1.1.1",
+  "description": "Cadmium Electron App - A developer-first AI tool for intelligent log analysis and error resolution",
   "main": "./out/main/index.js",
-  "author": "example.com",
-  "homepage": "https://electron-vite.org",
+  "author": "Softwares Compound",
+  "homepage": "https://neocadmium.com",
+  "build": {
+    "appId": "com.neocadmium.app",
+    "productName": "Neocadmium",
+    "directories": {
+      "buildResources": "build"
+    },
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "icon": "build/icon.icns",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "target": "dmg"
+    },
+    "win": {
+      "icon": "build/icon.ico",
+      "signAndEditExecutable": false,
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64", "ia32"]
+        }
+      ]
+    },
+    "linux": {
+      "icon": "build/",
+      "category": "Development",
+      "maintainer": "bannawandoor@gmail.com",
+      "target": ["AppImage", "deb", "rpm"]
+    },
+    "files": [
+      "out/**/*",
+      "electron-app/compiled-backend/ai-service*"
+    ]
+  },
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",

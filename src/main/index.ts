@@ -5,6 +5,53 @@ import icon from '../../resources/icon.png?asset'
 import { startServer } from './server/server'
 import { initializeDB } from './server/config/sqlite'
 import { FromMainPayload, ToMainPayload } from './types/types'
+import { spawn } from 'child_process' // Import spawn to start the process
+import fs from 'fs'
+let aiServiceProcess: any = null
+async function startAIService() {
+  let aiServicePath = ''
+
+  if (process.platform === 'darwin') {
+    aiServicePath = join(__dirname, '..', 'compiled-backend', 'ai-service') // macOS
+  } else if (process.platform === 'win32') {
+    aiServicePath = join(__dirname, '..', 'compiled-backend', 'ai-service.exe') // Windows
+  } else if (process.platform === 'linux') {
+    aiServicePath = join(__dirname, '..', 'compiled-backend', 'ai-service') // Linux
+  }
+
+  try {
+    console.log('Starting AI service...')
+    if (!fs.existsSync(aiServicePath)) {
+      console.error(`AI service binary not found at: ${aiServicePath}`)
+      return
+    }
+
+    aiServiceProcess = spawn(aiServicePath, [], {
+      detached: true,
+      stdio: ['ignore', 'pipe', 'pipe'] // Capture stdout and stderr
+    })
+
+    aiServiceProcess.unref() // Let the AI service run independently
+
+    aiServiceProcess.stdout?.on('data', (data) => {
+      console.log(`[AI Service]: ${data.toString().trim()}`)
+    })
+
+    aiServiceProcess.stderr?.on('data', (data) => {
+      console.error(`[AI Service Error]: ${data.toString().trim()}`)
+    })
+
+    aiServiceProcess.on('error', (err) => {
+      console.error(`AI Service failed to start: ${err.message}`)
+    })
+
+    aiServiceProcess.on('exit', (code) => {
+      console.log(`AI Service exited with code: ${code}`)
+    })
+  } catch (error) {
+    console.error(`Exception while starting AI Service: ${error}`)
+  }
+}
 
 function createWindow(): void {
   // Create the browser window.
@@ -76,6 +123,8 @@ app.whenReady().then(() => {
   initializeDB()
 
   startServer()
+
+  startAIService() // Start AI service before opening the window
 
   createWindow()
 

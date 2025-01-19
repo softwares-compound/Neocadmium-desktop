@@ -6,8 +6,8 @@ import os from 'os'
 import pty from 'node-pty'
 import corsOptions from './middlewares/cors-option'
 import router from './routes/router'
-import log from './middlewares/logging'
-import logger from './utils/logger'
+// import log from './middlewares/logging'
+
 import config from './config'
 import { WebSocketServer } from 'ws'
 import path from 'path'
@@ -22,7 +22,7 @@ app.use(cors(corsOptions))
 // app.use(router);
 app.use('/api', router)
 // Global log Handler
-app.use(log)
+// app.use(log)
 
 // Create an HTTP server
 const server = http.createServer(app)
@@ -117,6 +117,6 @@ wss.on('connection', (ws) => {
 
 export function startServer() {
   server.listen(config.port, () => {
-    logger.info(`Express server is running on http://localhost:${config.port}`)
+    console.log(`Server is running on port ${config.port}`)
   })
 }
