@@ -5,9 +5,33 @@ import icon from '../../resources/icon.png?asset'
 import { startServer } from './server/server'
 import { initializeDB } from './server/config/sqlite'
 import { FromMainPayload, ToMainPayload } from './types/types'
-import { spawn } from 'child_process' // Import spawn to start the process
+import { spawn,exec } from 'child_process' // Import spawn to start the process
 import fs from 'fs'
 let aiServiceProcess: any = null
+function checkAndStartOllama() {
+  exec('ollama list', (error) => {
+    if (error) {
+      console.log('Ollama is not running. Attempting to start Ollama...')
+      startOllama()
+    } else {
+      console.log('Ollama is already running.')
+    }
+  })
+}
+
+function startOllama() {
+  try {
+    const ollamaProcess = spawn('ollama', ['start'], {
+      detached: true,
+      stdio: 'ignore'
+    })
+    ollamaProcess.unref()
+    console.log('Ollama started successfully.')
+  } catch (error:any) {
+    console.error(`Failed to start Ollama: ${error.message}`)
+  }
+}
+
 async function startAIService() {
   let aiServicePath = ''
 
@@ -123,6 +147,8 @@ app.whenReady().then(() => {
   initializeDB()
 
   startServer()
+
+  checkAndStartOllama() // 🔹 Check & Start Ollama
 
   startAIService() // Start AI service before opening the window
 
