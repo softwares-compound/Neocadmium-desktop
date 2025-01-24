@@ -9,11 +9,24 @@ export const OrganizationModel = {
     organization_name: string
   ) => {
     const db = openDB()
+
+    // ✅ Check if the organization already exists before inserting
+    const existingOrg = db
+      .prepare(`SELECT * FROM organization_detail WHERE id = ?`)
+      .get(organization_id)
+
+    if (existingOrg) {
+      console.log(`Organization ${organization_id} already exists. Skipping insert.`)
+      return existingOrg
+    }
+
     const stmt = db.prepare(`
             INSERT INTO organization_detail (id, cd_id, cd_secret, organization_name)
             VALUES (?, ?, ?, ?)
         `)
-    return stmt.run(organization_id, cd_id, cd_secret, organization_name)
+    stmt.run(organization_id, cd_id, cd_secret, organization_name)
+
+    return db.prepare(`SELECT * FROM organization_detail WHERE id = ?`).get(organization_id)
   },
 
   getOrganizationById: (id: string) => {

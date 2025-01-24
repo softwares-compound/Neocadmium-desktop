@@ -2,6 +2,7 @@
 import express from 'express'
 import cors from 'cors'
 import http from 'http'
+import { Paths } from './config/paths'
 import os from 'os'
 import pty from 'node-pty'
 import corsOptions from './middlewares/cors-option'
@@ -52,9 +53,8 @@ wss.on('connection', (ws) => {
           }
 
           // Get the parent directory of process.cwd()
-          const parentDir = path.dirname(process.cwd())
           // Construct the project path
-          const projectPath = path.join(parentDir, 'target-codebases', projectId)
+          const projectPath = path.join(Paths.getTargetCodebasesDir(), projectId)
 
           // Initialize the PTY process with the project directory
           ptyProcess = pty.spawn(shell, [], {
