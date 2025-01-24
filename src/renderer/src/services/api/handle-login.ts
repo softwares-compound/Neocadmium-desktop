@@ -3,6 +3,7 @@ import { LOCAL_AXIOS_INSTANCE } from '../../axios/axios'
 import { useLoginStore } from '../../stores/useLoginStore'
 import { validateLoginForm } from '../validation/login-form'
 import { useAuthStore } from '../../stores/useAuthStore'
+import { sendMessage } from '../../socket/socket'
 import { NavigateFunction } from 'react-router-dom'
 
 /**
@@ -13,7 +14,7 @@ import { NavigateFunction } from 'react-router-dom'
  * @returns A promise that resolves when the login process is complete.
  */
 export const handleLogin = async (navigate: NavigateFunction): Promise<void> => {
-  const { setIsLoggedIn, setOrganizationName } = useAuthStore.getState() // Zustand state for auth
+  const { setIsLoggedIn, setOrganizationName } = useAuthStore.getState()
   const { formData, setErrors, setLoading } = useLoginStore.getState()
   const validationErrors = validateLoginForm(formData)
 
@@ -27,15 +28,26 @@ export const handleLogin = async (navigate: NavigateFunction): Promise<void> => 
   try {
     setLoading(true) // Start loading
     const resp = await LOCAL_AXIOS_INSTANCE.post('/login', { clientId, clientSecret })
+
     if (resp.status === 200) {
-      // Store credentials in local storage
+      const { organization_id, organization_name } = resp.data
+
+
       localStorage.setItem('cd_id', clientId)
       localStorage.setItem('cd_secret', clientSecret)
-      localStorage.setItem('organization_id', resp.data.organization_id)
-      localStorage.setItem('organization_name', resp.data.organization_name)
-      setOrganizationName(resp.data.organization_name)
-      navigate(`/${resp.data.organization_name}/projects`, { replace: true }) // Use the passed navigate function
+      localStorage.setItem('organization_id', organization_id)
+      localStorage.setItem('organization_name', organization_name)
+      setOrganizationName(organization_name)
+      navigate(`/${organization_name}/projects`, { replace: true }) // Navigate to projects page
       setIsLoggedIn(true)
+
+
+      sendMessage({
+        type: 'authenticate',
+        cd_id: clientId,
+        cd_secret: clientSecret,
+        organization_id: organization_id
+      })
     }
   } catch (error: any) {
     console.error('[Error] ==>>', error)
