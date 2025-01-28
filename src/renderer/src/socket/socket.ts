@@ -59,8 +59,10 @@ const retryConnection = (url: string): void => {
  * @param message - The message to send.
  */
 export const sendMessage = (message: object): void => {
+  console.log('Message sent:', message)
   if (socket && isConnected) {
     socket.send(JSON.stringify(message))
+
   } else {
     console.error('WebSocket is not connected!')
   }

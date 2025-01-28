@@ -1,6 +1,7 @@
 import { CLOUD_AXIOS_INSTANCE, LOCAL_AXIOS_INSTANCE } from '../../axios/axios'
 import { useProjectListStore } from '../../stores/useProjectListStore'
 import { ProjectList } from '../../types/type'
+import { sendMessage } from '../../socket/socket'
 
 export const fetchProjectList = async (): Promise<ProjectList | undefined> => {
   const { setLoading, setProjectList } = useProjectListStore.getState()
@@ -38,6 +39,12 @@ export const fetchProjectList = async (): Promise<ProjectList | undefined> => {
     )
     // console.log(projectListWithRemoteUrl.data.list)
     setProjectList(projectListWithRemoteUrl.data.list)
+    sendMessage({
+            type: 'authenticate',
+            cd_id: cd_id,
+            cd_secret: cd_secret,
+            organization_id: organization_id
+          })
     return projectList
   } catch (error) {
     console.error('Error fetching projects:', error)

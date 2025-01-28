@@ -32,50 +32,79 @@ function startOllama() {
   }
 }
 
-async function startAIService() {
+async function startAIService(): Promise<void> {
   let aiServicePath = ''
 
   if (process.platform === 'darwin') {
-    aiServicePath = join(__dirname, '..', 'compiled-backend', 'ai-service') // macOS
+    aiServicePath = join(__dirname, '..', 'compiled-backend', 'ai-service')
   } else if (process.platform === 'win32') {
-    aiServicePath = join(__dirname, '..', 'compiled-backend', 'ai-service.exe') // Windows
+    aiServicePath = join(__dirname, '..', 'compiled-backend', 'ai-service.exe')
   } else if (process.platform === 'linux') {
-    aiServicePath = join(__dirname, '..', 'compiled-backend', 'ai-service') // Linux
+    aiServicePath = join(__dirname, '..', 'compiled-backend', 'ai-service')
   }
 
-  try {
-    console.log('Starting AI service...')
-    if (!fs.existsSync(aiServicePath)) {
-      console.error(`AI service binary not found at: ${aiServicePath}`)
-      return
+  if (!fs.existsSync(aiServicePath)) {
+    throw new Error(`AI service binary not found at: ${aiServicePath}`)
+  }
+
+  console.log('Starting AI service...')
+
+  // Spawn WITHOUT detaching.
+  aiServiceProcess = spawn(aiServicePath, [], {
+    stdio: ['ignore', 'pipe', 'pipe']
+  })
+
+  return new Promise((resolve, reject) => {
+    let serviceIsReady = false
+
+    // Helper function to check messages on both stdout and stderr
+    const checkReady = (data: Buffer) => {
+      const message = data.toString().trim()
+
+      // For logging
+      // console.log('[AI Service Raw]:', message)
+
+      // If you see "Uvicorn running" in the string, we know the service is ready.
+      if (message.includes('Uvicorn running on http://0.0.0.0:6970')) {
+        serviceIsReady = true
+
+        // Detach so it can run on its own
+        aiServiceProcess.unref()
+        console.log('AI Service is ready. Detaching the process...')
+
+        // Resolve the Promise => Electron can continue
+        resolve()
+      }
     }
 
-    aiServiceProcess = spawn(aiServicePath, [], {
-      detached: true,
-      stdio: ['ignore', 'pipe', 'pipe'] // Capture stdout and stderr
-    })
-
-    aiServiceProcess.unref() // Let the AI service run independently
-
+    // Listen on stdout
     aiServiceProcess.stdout?.on('data', (data) => {
       console.log(`[AI Service]: ${data.toString().trim()}`)
+      checkReady(data)
     })
 
+    // Listen on stderr
     aiServiceProcess.stderr?.on('data', (data) => {
       console.error(`[AI Service Error]: ${data.toString().trim()}`)
+      checkReady(data)
     })
 
     aiServiceProcess.on('error', (err) => {
-      console.error(`AI Service failed to start: ${err.message}`)
+      if (!serviceIsReady) {
+        reject(err)
+      }
     })
 
     aiServiceProcess.on('exit', (code) => {
       console.log(`AI Service exited with code: ${code}`)
+      if (!serviceIsReady) {
+        reject(new Error(`AI Service exited prematurely with code: ${code}`))
+      }
     })
-  } catch (error) {
-    console.error(`Exception while starting AI Service: ${error}`)
-  }
+  })
 }
+
+
 
 function createWindow(): void {
   // Create the browser window.
@@ -129,7 +158,8 @@ ipcMain.on('toMain', (event, args: ToMainPayload) => {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
+// ...
+app.whenReady().then(async () => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 
@@ -146,26 +176,48 @@ app.whenReady().then(() => {
   // Initialize the SQLite database
   initializeDB()
 
+  // Start your Express/Fastify server on port 6969
   startServer()
 
-  checkAndStartOllama() // 🔹 Check & Start Ollama
+  // Check & Start Ollama
+  checkAndStartOllama()
 
-  startAIService() // Start AI service before opening the window
+  try {
+    // Wait for the AI service to print "Uvicorn running on http://0.0.0.0:6970"
+    await startAIService()
+    console.log('AI Service started successfully. Now creating the main window...')
+  } catch (error) {
+    console.error('AI Service failed to start properly:', error)
+    // If the AI service is critical, consider showing an error dialog or quitting the app:
+    // app.quit();
+    // return;
+  }
 
+  // Only now do we create the Electron window
   createWindow()
 
   app.on('activate', function () {
-    // On macOS it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 })
 
+
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
+// Listen for app exit and kill the AI service if running
+app.on('will-quit', () => {
+  if (aiServiceProcess) {
+    aiServiceProcess.kill()
+  }
+})
+
+// Or alternatively, you could place the kill logic in 'window-all-closed':
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
+    if (aiServiceProcess) {
+      aiServiceProcess.kill()
+    }
     app.quit()
   }
 })
